@@ -4,6 +4,7 @@ import bisect
 class Solver:
     w = 0
     h = 0
+    openDict = {}
     openList = []
     openSet = set()
     closedList = []

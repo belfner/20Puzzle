@@ -18,7 +18,7 @@ class Board:
         if board:
             self.board = board  # assigns array to board
         else:
-            self.board = list(range(width * height))
+            self.board = tuple(range(width * height))
 
         # set width and height of board
         self.width = width
@@ -43,10 +43,9 @@ class Board:
         if x != 0:
             nextID += 1
             moves.append(0)
-            newboard = self.board.copy()
+            newboard = self.board
             hold = newboard[ind - 1]
-            newboard[ind - 1] = 0
-            newboard[ind] = hold
+            newboard = newboard[:ind-1]
             nextBoards.append(
                 Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
         else:
@@ -55,10 +54,9 @@ class Board:
         if x != self.width - 1:
             nextID += 1
             moves.append(2)
-            newboard = self.board.copy()
+            newboard = self.board
             hold = newboard[ind + 1]
-            newboard[ind + 1] = 0
-            newboard[ind] = hold
+            newboard = newboard[:ind]+(hold,)+(0,)+newboard[ind+2:]
             nextBoards.append(
                 Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
         else:
@@ -105,11 +103,11 @@ class Board:
                 n = random.randrange(4)
             h = nextBoards[n]
             if n == 0:
-                p = 1
+                p = 2
             elif n == 1:
-                p = 0
-            elif n == 2:
                 p = 3
+            elif n == 2:
+                p = 0
             else:
                 p = 2
             # print(n)
