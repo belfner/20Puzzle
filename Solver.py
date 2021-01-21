@@ -4,7 +4,6 @@ import bisect
 class Solver:
     w = 0
     h = 0
-    openDict = {}
     openList = []
     openSet = set()
     closedList = []
@@ -20,7 +19,7 @@ class Solver:
         self.h = h
         self.sm = sm
         self.start = Board(w, h, board=start, stateID=self.currID) #set id of initial state to 0
-        self.currID += 1 #itterate id for next batch of boards
+        self.currID += 1  #itterate id for next batch of boards
 
         if goal:
             self.goal = Board(w, h, board=goal)
@@ -32,7 +31,7 @@ class Solver:
 
     def compareBoards(self, b1, b2):
         diff = 0
-        for i in range(self.w * self.h):
+        for i in range(1,self.w * self.h):
             x1, y1 = b1.getIndex(i)
             x2, y2 = b2.getIndex(i)
             if i >= 10:
@@ -50,7 +49,12 @@ class Solver:
             self.step()
 
     def step(self):
+        if len(self.closedSet)%25000 == 0:
+            print(f'Closed set size: {len(self.closedSet)}\nOpen set size: {len(self.openSet)}\nOpen list size: {len(self.openList)}')
+            print()
         currentBoard = self.openList.pop(0) #gets highest priority state from openList and then removes it
+        while tuple(currentBoard.board) in self.closedSet:
+            currentBoard = self.openList.pop(0)
         # if currentBoard.board == [1, 0, 2, 3, 4, 5, 6, 7, 8]:
         #     x = 1
         self.openSet.remove(tuple(currentBoard.board))
@@ -63,8 +67,7 @@ class Solver:
         self.closedSet.add(tuple(currentBoard.board))
 
     def printSol(self):
-        print(len(self.openList))
-        print(len(self.closedList))
+        print(f'Closed set size: {len(self.closedSet)}\nOpen set size: {len(self.openSet)}\nOpen list size: {len(self.openList)}')
         print()
         path = [self.finalboard]
         # for s in self.closedList:
@@ -103,12 +106,12 @@ class Solver:
             board.fn = board.gn
         elif self.sm == 'A*1':
             board.fn = board.gn + self.compareBoards(board,self.goal)
-        if tuple(board.board) in self.openSet:
-            if board.fn < self.openList[self.openList.index(board)].fn:
-                self.openList.remove(self.openList[self.openList.index(board)])
-                # self.openList.append(board)
-                self.insort(board)
-        elif board == self.goal:
+        # if tuple(board.board) in self.openSet:
+        #     if board.fn < self.openList[self.openList.index(board)].fn:
+        #         self.openList.remove(self.openList[self.openList.index(board)])
+        #         # self.openList.append(board)
+        #         self.insort(board)
+        if board == self.goal:
             self.pathFound = True
             self.finalboard = board;
             return

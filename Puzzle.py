@@ -1,6 +1,8 @@
 import random
-
-random.seed(10065423)
+import time
+# x =(int)(time.time())
+# print(x)
+# random.seed(x)
 
 class Board:
     board = []
@@ -12,14 +14,16 @@ class Board:
     hn = -1  # h(n)
     fn = -1  # f(n)
     priorityValue = -1
+    previousMove = -1
 
-    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0):
+    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0, previousMove = -1):
 
         if board:
             self.board = board  # assigns array to board
         else:
-            self.board = tuple(range(width * height))
+            self.board = list(range(width * height))[1:]+[0]
 
+        self.previousMove = previousMove
         # set width and height of board
         self.width = width
         self.height = height
@@ -40,49 +44,47 @@ class Board:
         # print(x, y)
         moves = []
         nextBoards = []
-        if x != 0:
+        if x != 0 and self.previousMove != 1:
             nextID += 1
             moves.append(0)
-            newboard = self.board
-            hold = newboard[ind - 1]
-            newboard = newboard[:ind-1]
+            newboard = self.board.copy()
+            newboard[ind] = newboard[ind - 1]
+            newboard[ind - 1] = 0
             nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
+                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 0))
         else:
             nextBoards.append(None)
 
-        if x != self.width - 1:
+        if x != self.width - 1 and self.previousMove != 0:
             nextID += 1
             moves.append(2)
-            newboard = self.board
-            hold = newboard[ind + 1]
-            newboard = newboard[:ind]+(hold,)+(0,)+newboard[ind+2:]
+            newboard = self.board.copy()
+            newboard[ind] = newboard[ind + 1]
+            newboard[ind + 1] = 0
             nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
+                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 1))
         else:
             nextBoards.append(None)
 
-        if y != 0:
+        if y != 0 and self.previousMove != 3:
             nextID += 1
             moves.append(1)
             newboard = self.board.copy()
-            hold = newboard[ind - self.width]
+            newboard[ind] = newboard[ind - self.width]
             newboard[ind - self.width] = 0
-            newboard[ind] = hold
             nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
+                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 2))
         else:
             nextBoards.append(None)
 
-        if y != self.height - 1:
+        if y != self.height - 1 and self.previousMove != 2:
             nextID += 1
             moves.append(3)
             newboard = self.board.copy()
-            hold = newboard[ind + self.width]
+            newboard[ind] = newboard[ind + self.width]
             newboard[ind + self.width] = 0
-            newboard[ind] = hold
             nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1))
+                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 3))
         else:
             nextBoards.append(None)
         # for b in nextBoards:
@@ -103,18 +105,18 @@ class Board:
                 n = random.randrange(4)
             h = nextBoards[n]
             if n == 0:
-                p = 2
+                p = 1
             elif n == 1:
-                p = 3
-            elif n == 2:
                 p = 0
+            elif n == 2:
+                p = 3
             else:
                 p = 2
             # print(n)
             boards.add(tuple(h.board))
         self.board = h.board
 
-        print(len(boards))
+        # print(len(boards))
 
     def getIndex(self, num):
         ind = self.board.index(num)
@@ -135,10 +137,13 @@ class Board:
         c = len(str(self.width * self.height - 1))
         for y in range(self.height):
             for x in range(self.width):
-                # print(y,x,self.w*y+x)
+                # print(y,x,self.w*y+x)W
                 ret += str(self.board[self.width * y + x]).rjust(c)
                 if x < self.width - 1:
                     ret += ' '
             if y < self.height:
                 ret += '\n'
         return ret
+
+    def to_j(self):
+        return ' '.join([str(x) for x in self.board])
