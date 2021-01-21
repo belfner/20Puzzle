@@ -26,6 +26,9 @@ class Solver:
         else:
             self.goal = Board(w, h)
 
+        self.start.diff = self.compareBoards(self.start,self.goal)
+        self.start.goal = self.goal
+
         self.addToOpen(self.start) #adds initial state to openList
         self.openSet.add(tuple(self.start.board))
 
@@ -83,10 +86,13 @@ class Solver:
         print(len(path))
 
     def insort(self, board):
+        keyfunc = lambda x: x.fn
+        # self.openList.append(board)
+        # self.openList.sort(key=keyfunc)
         if len(self.openList) == 0:
             self.openList.append(board)
             return
-        keyfunc = lambda x: x.fn
+
         x = keyfunc(board)
         lo = 0
         hi = len(self.openList)
@@ -105,7 +111,11 @@ class Solver:
         if self.sm == 'BrF':
             board.fn = board.gn
         elif self.sm == 'A*1':
-            board.fn = board.gn + self.compareBoards(board,self.goal)
+            # d = self.compareBoards(board,self.goal)
+            # if d != board.diff:
+            #     x=0
+            # board.fn = board.gn + self.compareBoards(board,self.goal)
+            board.fn = board.gn + board.diff
         # if tuple(board.board) in self.openSet:
         #     if board.fn < self.openList[self.openList.index(board)].fn:
         #         self.openList.remove(self.openList[self.openList.index(board)])

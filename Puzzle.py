@@ -1,8 +1,11 @@
 import random
 import time
+
 # x =(int)(time.time())
 # print(x)
 # random.seed(x)
+random.seed(100)
+
 
 class Board:
     board = []
@@ -16,13 +19,14 @@ class Board:
     priorityValue = -1
     previousMove = -1
 
-    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0, previousMove = -1):
+    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0, previousMove=-1, diff=0, goal=None):
 
         if board:
             self.board = board  # assigns array to board
         else:
-            self.board = list(range(width * height))[1:]+[0]
-
+            self.board = list(range(width * height))[1:] + [0]
+        self.diff = diff
+        self.goal = goal
         self.previousMove = previousMove
         # set width and height of board
         self.width = width
@@ -37,7 +41,7 @@ class Board:
 
         self.priorityValue = 0
 
-    def getNextBoards(self, nextID):
+    def getNextBoards(self, nextID, shuffle=False):
         ind = self.board.index(0)
         x = (ind % self.width)
         y = ind // self.width
@@ -50,8 +54,25 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind - 1]
             newboard[ind - 1] = 0
-            nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 0))
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=0, goal=self.goal)
+
+            if not shuffle:
+                new_diff = self.diff
+                i = self.board[ind - 1]
+                if i >= 10:
+                    m = 2
+                else:
+                    m = 1
+                x1, y1 = self.goal.getIndex(i)
+                x2, y2 = self.getIndex(i)
+                # subtract old tile position score
+                new_diff -= (abs(x2 - x1) * m)
+                new_diff -= (abs(y1 - y2) * m)
+                # add new tile position score
+                new_diff += (abs(x1 - x) * m)
+                new_diff += (abs(y1 - y) * m)
+                b.diff = new_diff
+            nextBoards.append(b)
         else:
             nextBoards.append(None)
 
@@ -61,8 +82,26 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind + 1]
             newboard[ind + 1] = 0
-            nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 1))
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=1, goal=self.goal)
+
+            if not shuffle:
+                new_diff = self.diff
+                i = self.board[ind + 1]
+                if i >= 10:
+                    m = 2
+                else:
+                    m = 1
+                x1, y1 = self.goal.getIndex(i)
+                x2, y2 = self.getIndex(i)
+                # subtract old tile position score
+                new_diff -= (abs(x2 - x1) * m)
+                new_diff -= (abs(y1 - y2) * m)
+                # add new tile position score
+                new_diff += (abs(x1 - x) * m)
+                new_diff += (abs(y1 - y) * m)
+                b.diff = new_diff
+
+            nextBoards.append(b)
         else:
             nextBoards.append(None)
 
@@ -72,8 +111,24 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind - self.width]
             newboard[ind - self.width] = 0
-            nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 2))
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=2, goal=self.goal)
+            if not shuffle:
+                new_diff = self.diff
+                i = self.board[ind - self.width]
+                if i >= 10:
+                    m = 2
+                else:
+                    m = 1
+                x1, y1 = self.goal.getIndex(i)
+                x2, y2 = self.getIndex(i)
+                # subtract old tile position score
+                new_diff -= (abs(x2 - x1) * m)
+                new_diff -= (abs(y1 - y2) * m)
+                # add new tile position score
+                new_diff += (abs(x1 - x) * m)
+                new_diff += (abs(y1 - y) * m)
+                b.diff = new_diff
+            nextBoards.append(b)
         else:
             nextBoards.append(None)
 
@@ -83,13 +138,26 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind + self.width]
             newboard[ind + self.width] = 0
-            nextBoards.append(
-                Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove= 3))
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=3, goal=self.goal)
+            if not shuffle:
+                new_diff = self.diff
+                i = self.board[ind + self.width]
+                if i >= 10:
+                    m = 2
+                else:
+                    m = 1
+                x1, y1 = self.goal.getIndex(i)
+                x2, y2 = self.getIndex(i)
+                # subtract old tile position score
+                new_diff -= (abs(x2 - x1) * m)
+                new_diff -= (abs(y1 - y2) * m)
+                # add new tile position score
+                new_diff += (abs(x1 - x) * m)
+                new_diff += (abs(y1 - y) * m)
+                b.diff = new_diff
+            nextBoards.append(b)
         else:
             nextBoards.append(None)
-        # for b in nextBoards:
-        #     print()
-        #     b.printBoard()
 
         return nextBoards, nextID
 
@@ -98,7 +166,7 @@ class Board:
         h = self
         p = -1
         for i in range(x):
-            nextBoards, id = h.getNextBoards(0)
+            nextBoards, id = h.getNextBoards(0, shuffle=True)
             n = random.randrange(4)
 
             while n == p or not nextBoards[n]:
@@ -118,8 +186,11 @@ class Board:
 
         # print(len(boards))
 
-    def getIndex(self, num):
-        ind = self.board.index(num)
+    def getIndex(self, num, board=None):
+        if board is not None:
+            ind = board.index(num)
+        else:
+            ind = self.board.index(num)
         x = (ind % self.width)
         y = ind // self.width
         return (x, y)
