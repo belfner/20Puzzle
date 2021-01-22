@@ -1,10 +1,11 @@
 from Puzzle import Board
 import bisect
+from sortedcontainers import SortedKeyList
 
 class Solver:
     w = 0
     h = 0
-    openList = []
+    openList = SortedKeyList(key= lambda x:x.fn)
     openSet = set()
     closedList = []
     closedSet = set()
@@ -13,6 +14,9 @@ class Solver:
     finalboard = None
     pathFound = False
     currID = 0
+    path = []
+    sol_len = 0
+
 
     def __init__(self, start, w, h, goal=None, sm='BrF'):
         self.w = w
@@ -30,7 +34,7 @@ class Solver:
         self.start.goal = self.goal
 
         self.addToOpen(self.start) #adds initial state to openList
-        self.openSet.add(tuple(self.start.board))
+        # self.openSet.add(tuple(self.start.board))
 
     def compareBoards(self, b1, b2):
         diff = 0
@@ -52,15 +56,15 @@ class Solver:
             self.step()
 
     def step(self):
-        if len(self.closedSet)%25000 == 0:
-            print(f'Closed set size: {len(self.closedSet)}\nOpen set size: {len(self.openSet)}\nOpen list size: {len(self.openList)}')
+        if len(self.closedSet)%25000 == 0 and len(self.closedSet) != 0:
+            print(f'Closed set size: {len(self.closedSet)}\nOpen list size: {len(self.openList)}')
             print()
         currentBoard = self.openList.pop(0) #gets highest priority state from openList and then removes it
         while tuple(currentBoard.board) in self.closedSet:
             currentBoard = self.openList.pop(0)
         # if currentBoard.board == [1, 0, 2, 3, 4, 5, 6, 7, 8]:
         #     x = 1
-        self.openSet.remove(tuple(currentBoard.board))
+        # self.openSet.remove(tuple(currentBoard.board))
         nextBoards, newID = currentBoard.getNextBoards(self.currID)
         self.currID = newID
         for board in [b for b in nextBoards if b]: #gets all successor states from current state
@@ -69,21 +73,30 @@ class Solver:
         self.closedList.append(currentBoard) #append the current state to the closed list
         self.closedSet.add(tuple(currentBoard.board))
 
+    def calc_path(self):
+        self.path = [self.finalboard]
+        while self.path[-1].previousB is not None:
+            self.path.append(self.path[-1].previousB)
+        self.path = list(reversed(self.path))[:-1]
+        self.sol_len = len(self.path)
+
     def printSol(self):
-        print(f'Closed set size: {len(self.closedSet)}\nOpen set size: {len(self.openSet)}\nOpen list size: {len(self.openList)}')
+        print(f'Closed set size: {len(self.closedSet)}\nOpen list size: {len(self.openList)}')
         print()
         path = [self.finalboard]
         # for s in self.closedList:
         #     print(s.stateID)
-        while path[-1].previousID != -1:
-            # print(path[-1].previousID)
-            previousState = [s for s in self.closedList if s.stateID == path[-1].previousID][0]
-            path.append(previousState)
+        # while path[-1].previousID != -1:
+        #     # print(path[-1].previousID)
+        #     previousState = [s for s in self.closedList if s.stateID == path[-1].previousID][0]
+        #     path.append(previousState)
+        while path[-1].previousB is not None:
+            path.append(path[-1].previousB)
         #
-        for b in reversed(path):
-            print(b)
+        # for b in reversed(path):
+        #     print(b)
 
-        print(len(path))
+        self.sol_len = len(path)
 
     def insort(self, board):
         keyfunc = lambda x: x.fn
@@ -106,7 +119,7 @@ class Solver:
 
     def addToOpen(self, board): #checks for completion then checks all requirements for adding state to the open list
 
-        if tuple(board.board) in self.closedSet: # if the state is in the closed list then skip it
+        if tuple(board.board) in self.closedSet or board in self.openList: # if the state is in the closed list then skip it
             return
         if self.sm == 'BrF':
             board.fn = board.gn
@@ -123,10 +136,11 @@ class Solver:
         #         self.insort(board)
         if board == self.goal:
             self.pathFound = True
-            self.finalboard = board;
+            self.finalboard = board
             return
         else:
             # self.openList.append(board)
-            self.insort(board)
-            self.openSet.add(tuple(board.board))
+            # self.insort(board)
+            self.openList.add(board)
+            # self.openSet.add(tuple(board.board))
 

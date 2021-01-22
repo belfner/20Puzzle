@@ -1,10 +1,10 @@
 import random
 import time
 
+
 # x =(int)(time.time())
 # print(x)
-# random.seed(x)
-random.seed(100)
+random.seed(10000)
 
 
 class Board:
@@ -19,7 +19,7 @@ class Board:
     priorityValue = -1
     previousMove = -1
 
-    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0, previousMove=-1, diff=0, goal=None):
+    def __init__(self, width, height, board=None, previousID=None, stateID=1, gn=0, previousMove=-1, diff=0, goal=None, previousB=None):
 
         if board:
             self.board = board  # assigns array to board
@@ -41,6 +41,8 @@ class Board:
 
         self.priorityValue = 0
 
+        self.previousB = previousB
+
     def getNextBoards(self, nextID, shuffle=False):
         ind = self.board.index(0)
         x = (ind % self.width)
@@ -54,7 +56,7 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind - 1]
             newboard[ind - 1] = 0
-            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=0, goal=self.goal)
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=0, goal=self.goal, previousB=self)
 
             if not shuffle:
                 new_diff = self.diff
@@ -82,7 +84,7 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind + 1]
             newboard[ind + 1] = 0
-            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=1, goal=self.goal)
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=1, goal=self.goal, previousB=self)
 
             if not shuffle:
                 new_diff = self.diff
@@ -111,7 +113,7 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind - self.width]
             newboard[ind - self.width] = 0
-            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=2, goal=self.goal)
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=2, goal=self.goal, previousB=self)
             if not shuffle:
                 new_diff = self.diff
                 i = self.board[ind - self.width]
@@ -138,7 +140,7 @@ class Board:
             newboard = self.board.copy()
             newboard[ind] = newboard[ind + self.width]
             newboard[ind + self.width] = 0
-            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=3, goal=self.goal)
+            b = Board(self.width, self.height, board=newboard, stateID=nextID, previousID=self.stateID, gn=self.gn + 1, previousMove=3, goal=self.goal, previousB=self)
             if not shuffle:
                 new_diff = self.diff
                 i = self.board[ind + self.width]
